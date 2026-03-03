@@ -4,6 +4,30 @@
         let modifiedSections = new Set();
         let subConfigData = null;
         let hasMultipleHosts = false; // 标记是否存在多个 HOSTS
+        const DEFAULT_SUB_API = 'https://subconverter-latest-qfyo.onrender.com';
+
+        function ensureConvertConfigDefaults(config) {
+            if (!config.订阅转换配置) config.订阅转换配置 = {};
+            if (!config.订阅转换配置.SUBAPI) config.订阅转换配置.SUBAPI = DEFAULT_SUB_API;
+            if (config.订阅转换配置.SUBCONFIG === undefined) config.订阅转换配置.SUBCONFIG = '';
+            if (config.订阅转换配置.SUBEMOJI === undefined) config.订阅转换配置.SUBEMOJI = false;
+            return config.订阅转换配置.SUBAPI;
+        }
+
+        function ensureSubGeneratorDefaults(config) {
+            if (!config.优选订阅生成) config.优选订阅生成 = {};
+            const sub = config.优选订阅生成;
+            if (sub.local === undefined) sub.local = true;
+            if (!sub.本地IP库) sub.本地IP库 = {};
+            if (sub.本地IP库.随机IP === undefined) sub.本地IP库.随机IP = false;
+            if (sub.本地IP库.随机数量 === undefined) sub.本地IP库.随机数量 = 16;
+            if (sub.本地IP库.指定端口 === undefined) sub.本地IP库.指定端口 = -1;
+            if (sub.SUB === undefined) sub.SUB = null;
+            if (!sub.SUBNAME) sub.SUBNAME = 'edgetunnel';
+            if (sub.SUBUpdateTime === undefined) sub.SUBUpdateTime = 3;
+            if (sub.TOKEN === undefined) sub.TOKEN = '';
+            return sub;
+        }
 
         // 延迟测试配置
         const latencyTestConfig = {
@@ -607,7 +631,7 @@
             }
 
             // 订阅转换配置
-            document.getElementById('subAPI').value = currentConfig.订阅转换配置?.SUBAPI || '';
+            document.getElementById('subAPI').value = ensureConvertConfigDefaults(currentConfig);
             document.getElementById('subConfig').value = currentConfig.订阅转换配置?.SUBCONFIG || '';
             document.getElementById('emoji').checked = currentConfig.订阅转换配置?.SUBEMOJI || false;
 
@@ -1451,6 +1475,7 @@
                 showToast('自定义优选地址不能为空', 'error');
                 return;
             }
+            const subConfig = ensureSubGeneratorDefaults(currentConfig);
 
             const updates = {
                 local: true,
@@ -1459,9 +1484,9 @@
                     随机IP: false
                 },
                 SUB: null,
-                SUBNAME: currentConfig.优选订阅生成.SUBNAME,
-                SUBUpdateTime: currentConfig.优选订阅生成.SUBUpdateTime,
-                TOKEN: currentConfig.优选订阅生成.TOKEN
+                SUBNAME: subConfig.SUBNAME,
+                SUBUpdateTime: subConfig.SUBUpdateTime,
+                TOKEN: subConfig.TOKEN
             };
 
             currentConfig.优选订阅生成 = { ...currentConfig.优选订阅生成, ...updates };
@@ -1477,7 +1502,8 @@
         }
 
         async function saveConfig() {
-            currentConfig.优选订阅生成.SUBNAME = document.getElementById('subName').value;
+            const subConfig = ensureSubGeneratorDefaults(currentConfig);
+            subConfig.SUBNAME = document.getElementById('subName').value;
             currentConfig.协议类型 = document.getElementById('protocol').value;
             //currentConfig.传输协议 = currentConfig.协议类型 === 'trojan' ? 'ws' : document.getElementById('transport').value;
             currentConfig.跳过证书验证 = document.getElementById('skipVerify').checked;
@@ -1698,8 +1724,37 @@
             await saveConfigToServer('convert');
         }
 
+        async function ensureRequiredConfigFields() {
+            if (currentConfig.UUID && currentConfig.HOST) return;
+
+            const response = await fetch('/admin/config.json', {
+                method: 'GET',
+                headers: {
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache',
+                    'Expires': '0'
+                }
+            });
+
+            if (!response.ok) return;
+            const serverConfig = await response.json();
+            currentConfig = {
+                ...serverConfig,
+                ...currentConfig,
+                订阅转换配置: {
+                    ...(serverConfig.订阅转换配置 || {}),
+                    ...(currentConfig.订阅转换配置 || {})
+                }
+            };
+        }
+
         async function saveConfigToServer(section) {
             try {
+                await ensureRequiredConfigFields();
+                if (!currentConfig.UUID || !currentConfig.HOST) {
+                    throw new Error('配置缺少 HOST 或 UUID');
+                }
+
                 const response = await fetch('/admin/config.json', {
                     method: 'POST',
                     headers: {
@@ -1711,12 +1766,19 @@
                     body: JSON.stringify(currentConfig)
                 });
 
-                if (!response.ok) throw new Error('保存失败');
+                if (!response.ok) {
+                    let errorMessage = '保存失败';
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.error || errorData.message || errorMessage;
+                    } catch (_) { }
+                    throw new Error(errorMessage);
+                }
                 showToast('✅ 配置已保存，请更新订阅，才能获取最新节点内容！', 'success');
                 modifiedSections.delete(section);
                 updateButtonStates();
             } catch (error) {
-                showToast('😢 ' + error.message + '，请检测网络环境，或关闭代理后再试！', 'error');
+                showToast('😢 ' + error.message, 'error');
             }
         }
 
@@ -1803,7 +1865,7 @@
                 }
                 updateProxyMode();
             } else if (section === 'convert') {
-                document.getElementById('subAPI').value = currentConfig.订阅转换配置?.SUBAPI || '';
+                document.getElementById('subAPI').value = ensureConvertConfigDefaults(currentConfig);
                 document.getElementById('subConfig').value = currentConfig.订阅转换配置?.SUBCONFIG || '';
                 document.getElementById('emoji').checked = currentConfig.订阅转换配置?.SUBEMOJI || false;
                 // 重新填充下拉框以恢复正确的选中状态

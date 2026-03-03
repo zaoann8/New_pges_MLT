@@ -641,7 +641,7 @@
                     }
                     updateProxyMode();
                 } else if (section === 'convert') {
-                    document.getElementById('subAPI').value = currentConfig.订阅转换配置?.SUBAPI || '';
+                    document.getElementById('subAPI').value = currentConfig.订阅转换配置?.SUBAPI || 'https://subconverter-latest-qfyo.onrender.com';
                     document.getElementById('subConfig').value = currentConfig.订阅转换配置?.SUBCONFIG || '';
                     document.getElementById('emoji').checked = currentConfig.订阅转换配置?.SUBEMOJI || false;
                 }
