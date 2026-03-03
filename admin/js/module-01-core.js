@@ -26,13 +26,17 @@
         }
 
         async function fetchTextStrict(url) {
+            const requestHeaders = {
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+            };
+            if (typeof url === 'string' && url.startsWith('/admin/')) {
+                requestHeaders['X-Admin-Request'] = '1';
+            }
             const response = await fetch(url, {
                 method: 'GET',
-                headers: {
-                    'Cache-Control': 'no-cache, no-store, must-revalidate',
-                    'Pragma': 'no-cache',
-                    'Expires': '0'
-                }
+                headers: requestHeaders
             });
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             return response.text();
@@ -1171,24 +1175,6 @@
                 document.getElementById('globalHTTP').checked = currentConfig.反代?.SOCKS5?.全局 || false;
             }
 
-            // 更新 "获取更多PROXYIP" 按钮的显示状态
-            const getMoreBtn = document.getElementById('getMoreProxyIPBtn');
-            if (getMoreBtn) {
-                getMoreBtn.style.display = mode === 'auto' ? 'inline-block' : 'none';
-            }
-
-            // 更新 "探索更多SOCKS5" 按钮的显示状态
-            const exploreSocks5Btn = document.getElementById('exploreSocks5Btn');
-            if (exploreSocks5Btn) {
-                exploreSocks5Btn.style.display = mode === 'socks5' ? 'inline-block' : 'none';
-            }
-
-            // 更新 "探索更多HTTP" 按钮的显示状态
-            const exploreHTTPBtn = document.getElementById('exploreHTTPBtn');
-            if (exploreHTTPBtn) {
-                exploreHTTPBtn.style.display = mode === 'http' ? 'inline-block' : 'none';
-            }
-
             markModified('proxy');
         }
 
@@ -1196,6 +1182,58 @@
             const autoProxy = document.getElementById('autoProxy').checked;
             document.getElementById('proxyIP').disabled = autoProxy;
             markModified('proxy');
+        }
+
+        // 检查当前访问域名是否在 HOSTS 数组中
+        function checkHostsMismatch() {
+            const currentHostname = window.location.hostname;
+            const hosts = currentConfig.HOSTS || [];
+            const isHostInArray = hosts.some(host => host.split(':')[0] === currentHostname);
+            if (!isHostInArray && hosts.length > 0 && shouldShowHostsMismatchNotification()) {
+                showHostsMismatchNotification(currentHostname, hosts);
+            }
+        }
+
+        function shouldShowHostsMismatchNotification() {
+            const cacheKey = 'hostsMismatchNotificationTime';
+            const cachedTime = localStorage.getItem(cacheKey);
+            if (!cachedTime) return true;
+            const lastNotificationTime = parseInt(cachedTime, 10);
+            const currentTime = Date.now();
+            const twentyFourHours = 24 * 60 * 60 * 1000;
+            return (currentTime - lastNotificationTime) > twentyFourHours;
+        }
+
+        function showHostsMismatchNotification(currentHostname, hosts) {
+            const currentHostnameEl = document.getElementById('currentHostname');
+            const hostToAddEl = document.getElementById('hostToAdd');
+            const currentHostsEl = document.getElementById('currentHosts');
+            if (currentHostnameEl) currentHostnameEl.textContent = currentHostname;
+            if (hostToAddEl) hostToAddEl.textContent = currentHostname;
+            if (currentHostsEl) {
+                currentHostsEl.innerHTML = '';
+                hosts.forEach((host) => {
+                    const badge = document.createElement('span');
+                    badge.className = 'hosts-badge';
+                    badge.textContent = host;
+                    currentHostsEl.appendChild(badge);
+                });
+            }
+            const overlay = document.getElementById('hostsMismatchModal');
+            if (overlay) overlay.classList.add('show');
+        }
+
+        function closeHostsMismatchModal(event) {
+            if (event && event.target && event.target.id !== 'hostsMismatchModal') return;
+            const overlay = document.getElementById('hostsMismatchModal');
+            if (overlay) overlay.classList.remove('show');
+        }
+
+        function dismissHostsMismatchNotification() {
+            const cacheKey = 'hostsMismatchNotificationTime';
+            localStorage.setItem(cacheKey, Date.now().toString());
+            closeHostsMismatchModal({ target: { id: 'hostsMismatchModal' } });
+            showToast('🎉 24小时内不会再提示', 'info');
         }
 
         function toggleModule(titleEl) {
@@ -1546,7 +1584,13 @@
             currentConfig.优选订阅生成 = { ...currentConfig.优选订阅生成, ...updates };
 
             try {
-                await fetch('/admin/ADD.txt', { method: 'POST', body: customIPs });
+                await fetch('/admin/ADD.txt', {
+                    method: 'POST',
+                    headers: {
+                        'X-Admin-Request': '1'
+                    },
+                    body: customIPs
+                });
             } catch (error) {
                 showToast('保存自定义IP失败', 'error');
                 return;
@@ -1820,6 +1864,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'X-Admin-Request': '1',
                         'Cache-Control': 'no-cache, no-store, must-revalidate',
                         'Pragma': 'no-cache',
                         'Expires': '0'
@@ -2009,7 +2054,12 @@
 
         async function confirmReset() {
             try {
-                const response = await fetch('/admin/init');
+                const response = await fetch('/admin/init', {
+                    method: 'POST',
+                    headers: {
+                        'X-Admin-Request': '1'
+                    }
+                });
                 if (!response.ok) throw new Error('重置失败');
 
                 closeResetModal();

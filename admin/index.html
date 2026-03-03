@@ -12,9 +12,6 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&family=Orbitron:wght@700;800;900&display=swap"
         rel="stylesheet">
-    <!-- Leaflet Map Resources -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         /* 基础重置 */
         * {
@@ -643,169 +640,6 @@
 
         .modal-close:hover {
             color: #1f2937
-        }
-
-        /* SOCKS5 模态框样式 */
-        #getMoreProxyIPModal .modal,
-        #exploreSocks5Modal .modal,
-        #exploreHTTPModal .modal {
-            max-width: 900px;
-            width: 95%;
-            padding: 0;
-            overflow: hidden;
-            display: flex !important;
-            flex-direction: row;
-        }
-
-        .modal-map-side {
-            flex: 1.2;
-            min-height: 500px;
-            height: auto;
-            background: #f0f0f0;
-            position: relative;
-            z-index: 1;
-        }
-
-        .modal-content-side {
-            flex: 1;
-            padding: 30px;
-            display: flex;
-            flex-direction: column;
-            background: var(--bg-primary, #fff);
-            color: var(--text-primary, #1f2937);
-            min-height: 500px;
-            max-height: 90vh;
-            overflow-y: auto;
-            transition: all 0.3s ease;
-        }
-
-        /* 移动设备上变为上下布局 - 当屏幕宽度小于等于768px时生效 */
-        @media (max-width: 768px) {
-
-            /* SOCKS5和HTTP弹窗的主容器样式调整 */
-            #getMoreProxyIPModal .modal,
-            #exploreSocks5Modal .modal,
-            #exploreHTTPModal .modal {
-                /* 改为上下排列方式（竖直方向） */
-                flex-direction: column;
-                /* 最大高度：浏览器可视区高度 - 100px（为顶部导航栏和按钮留出空间） */
-                max-height: calc(100vh - 100px);
-                /* 设置实际高度为最大高度，充分利用屏幕空间 */
-                height: calc(100vh - 100px);
-            }
-
-            /* 地图区域样式 - 放在上半部分 */
-            .modal-map-side {
-                /* flex: 1 表示占用所有剩余空间 */
-                flex: 1;
-                /* 高度自动计算 */
-                height: auto;
-                /* 最小高度120px，缩小地图以保护下面的按钮显示空间 */
-                min-height: 120px;
-                /* 最大高度限制，确保下面的下拉框和按钮不会被压挤 */
-                max-height: calc(100vh - 280px);
-                /* 宽度铺满整个宽度 */
-                width: 100%;
-            }
-
-            /* 内容区域样式 - 放在下半部分（地区和代理选择、按钮） */
-            .modal-content-side {
-                /* flex: 0 0 auto 表示不伸缩，只占用内容所需高度 */
-                flex: 0 0 auto;
-                /* 设置最小高度，确保下拉框和按钮完整显示 */
-                min-height: 180px;
-                /* 取消最大高度限制，让内容自适应 */
-                max-height: none;
-                /* 内边距 */
-                padding: 20px;
-                /* 移除左边框（因为已不是左右并排） */
-                border-left: none;
-                /* 内容超过时垂直滚动 */
-                overflow-y: auto;
-            }
-        }
-
-        /* 
-        调整指南：
-        1. 下拉框/按钮显示不完整？增加 .modal-content-side 的 min-height（如改为200px）
-        2. 下拉框/按钮显示完整，但想给地图更多空间？减小 .modal-content-side 的 min-height（如改为150px）
-        3. 地图太小？增加 .modal-map-side 的 min-height（如改为150px）或减小 max-height 的280值（如改为250）
-        4. 地图太大压挤按钮？减小 .modal-map-side 的 min-height（如改为100px）或增加 max-height 的280值（如改为300）
-        */
-
-        html.dark-mode .modal-content-side {
-            background: var(--bg-secondary, #1a1a1a);
-            border-left: 1px solid var(--border-color, #333);
-        }
-
-        html.dark-mode .modal-content-side .section-title {
-            color: var(--text-primary, #fff);
-        }
-
-        html.dark-mode .modal-content-side p {
-            color: var(--text-secondary, #a0a0a0);
-        }
-
-        html.dark-mode .modal-content-side label {
-            color: var(--text-primary, #e5e5e5);
-        }
-
-        html.dark-mode .modal-content-side select {
-            background-color: var(--input-bg, #2a2a2a) !important;
-            border-color: var(--input-border, #333) !important;
-            color: var(--text-primary, #e5e5e5) !important;
-        }
-
-        /* 地图夜间模式全面修补 */
-        html.dark-mode .proxy-map-container {
-            background-color: #1a1a1a !important;
-        }
-
-        /* 强制反转瓦片颜色：浅色底图 -> 深色底图，黑色文字 -> 白色文字 */
-        html.dark-mode .leaflet-tile-pane {
-            filter: invert(100%) hue-rotate(180deg) brightness(0.85) contrast(1.1) !important;
-        }
-
-        /* 修正 Leaflet Popup 在夜间模式下的样式 */
-        html.dark-mode .leaflet-popup-content-wrapper,
-        html.dark-mode .leaflet-popup-tip {
-            background: #2a2a2a !important;
-            color: #fff !important;
-            box-shadow: 0 3px 14px rgba(0, 0, 0, 0.4) !important;
-        }
-
-        .proxy-map-container {
-            width: 100%;
-            height: 100%;
-        }
-
-        /* 隐藏 Leaflet 标识 */
-        .leaflet-control-attribution {
-            display: none !important;
-        }
-
-        @media (max-width: 768px) {
-
-            #getMoreProxyIPModal .modal,
-            #exploreSocks5Modal .modal,
-            #exploreHTTPModal .modal {
-                flex-direction: column;
-                max-width: 550px;
-            }
-
-            .modal-map-side {
-                height: 200px;
-            }
-
-            .modal-content-side {
-                max-height: none;
-            }
-        }
-
-        .proxy-list-container,
-        .socks5-list-container,
-        .http-list-container {
-            width: 100%;
         }
 
         /* 社交链接 - 重构为统一风格 */
@@ -3575,33 +3409,6 @@
             font-weight: 700;
         }
 
-        /* Map Popup Styling */
-        .leaflet-popup-content-wrapper {
-            background: rgba(255, 255, 255, 0.8) !important;
-            -webkit-backdrop-filter: blur(10px);
-            backdrop-filter: blur(10px);
-            border-radius: 12px !important;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: #374151 !important;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        }
-
-        html.dark-mode .leaflet-popup-content-wrapper {
-            background: rgba(31, 41, 55, 0.8) !important;
-            border-color: rgba(255, 255, 255, 0.1);
-            color: #e5e7eb !important;
-        }
-
-        .leaflet-popup-tip {
-            background: rgba(255, 255, 255, 0.8) !important;
-            -webkit-backdrop-filter: blur(10px);
-            backdrop-filter: blur(10px);
-        }
-
-        html.dark-mode .leaflet-popup-tip {
-            background: rgba(31, 41, 55, 0.8) !important;
-        }
-
         .ip-detail-popup-content {
             font-family: 'Inter', sans-serif;
             padding: 2px;
@@ -5038,21 +4845,6 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
                             style="display: none; padding: 10px 16px;" title="配置路径模板">
                             ⚙️ 路径模板配置
                         </button>
-                        <button type="button" class="btn btn-search-proxy" id="getMoreProxyIPBtn"
-                            onclick="showGetMoreProxyIPModal()" style="display: none; padding: 10px 16px;"
-                            title="从 ProxyIP 列表中选择可用的代理">
-                            🗺️ 获取更多 PROXYIP
-                        </button>
-                        <button type="button" class="btn btn-search-proxy" id="exploreSocks5Btn"
-                            onclick="showExploreSocks5Modal()" style="display: none; padding: 10px 16px;"
-                            title="从SOCKS5列表中选择可用的代理">
-                            🔒 获取更多 SOCKS5
-                        </button>
-                        <button type="button" class="btn btn-search-proxy" id="exploreHTTPBtn"
-                            onclick="showExploreHTTPModal()" style="display: none; padding: 10px 16px;"
-                            title="从HTTP列表中选择可用的代理">
-                            🌐 获取更多 HTTP
-                        </button>
                         <div class="btn-group">
                             <button type="button" class="btn btn-secondary" onclick="cancelEdit('proxy')" disabled
                                 id="cancelProxyBtn">取消</button>
@@ -5905,160 +5697,6 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
         </div>
     </div>
 
-    <!-- 获取更多 PROXYIP 弹窗 -->
-    <div class="modal-overlay" id="getMoreProxyIPModal">
-        <div class="modal">
-            <div class="modal-map-side">
-                <div id="proxy-map-proxyip" class="proxy-map-container"></div>
-            </div>
-            <div class="modal-content-side">
-                <button type="button" class="modal-close" onclick="closeGetMoreProxyIPModal(event)"
-                    style="cursor: pointer;">×</button>
-                <h2 class="section-title" style="margin-bottom: 10px; text-align: center;">🗺️ 获取更多 PROXYIP</h2>
-                <p style="text-align: center; color: #666; font-size: 13px; margin-bottom: 20px;">
-                    反代资源来自 Github、<a href="https://t.me/zip_cm_edu_kg" target="_blank"
-                        rel="noopener noreferrer">CM科技大学</a>频道 等开源社区。
-                </p>
-                <div class="proxy-list-container">
-                    <div class="form-group">
-                        <label for="proxyIPDataRegionSelect">🏳️‍🌈 选择目标地区</label>
-                        <div class="input-wrapper">
-                            <select id="proxyIPDataRegionSelect" onchange="onProxyIPDataRegionChange()"
-                                style="padding-left: 16px;">
-                                <option value="">加载中...</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-group" id="proxyIPProxySelectGroup">
-                        <label for="proxyIPProxySelect">🌐 选择目标代理 (最多8个)</label>
-                        <div class="input-wrapper">
-                            <select id="proxyIPProxySelect" onchange="addSelectedProxyIP(); updateProxyMap('proxyip');"
-                                style="padding-left: 16px; font-family: 'Fira Code', monospace; font-size: 12px;">
-                                <option value=""></option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div id="selectedProxyIPsContainer" class="selected-proxies-tags"
-                        style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; min-height: 40px; padding: 10px; border: 1px dashed #e5e7eb; border-radius: 8px;">
-                        <!-- 已选 IP 标签将显示在这里 -->
-                    </div>
-                </div>
-
-                <div class="btn-group"
-                    style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: auto; padding-top: 20px;">
-                    <button type="button" class="btn btn-primary" id="proxyIPConfirmBtn"
-                        onclick="confirmSelectProxyIP()" disabled>
-                        确定
-                    </button>
-                    <button type="button" class="btn btn-secondary" onclick="closeGetMoreProxyIPModal(event)">
-                        取消
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 探索SOCKS5弹窗 -->
-    <div class="modal-overlay" id="exploreSocks5Modal">
-        <div class="modal">
-            <div class="modal-map-side">
-                <div id="proxy-map-socks5" class="proxy-map-container"></div>
-            </div>
-            <div class="modal-content-side">
-                <button type="button" class="modal-close" onclick="closeExploreSocks5Modal(event)"
-                    style="cursor: pointer;">×</button>
-                <h2 class="section-title" style="margin-bottom: 10px; text-align: center;">🔒 获取更多 SOCKS5</h2>
-                <p style="text-align: center; color: #666; font-size: 13px; margin-bottom: 20px;">
-                    代理资源来自 Github、<a href="https://t.me/Enkelte_notif" target="_blank" rel="noopener noreferrer">Notif
-                        💬</a>频道、OTC大佬 等开源社区。
-                </p>
-                <div class="socks5-list-container">
-                    <div class="form-group">
-                        <label for="socks5RegionSelect">🏳️‍🌈 选择目标地区</label>
-                        <div class="input-wrapper">
-                            <select id="socks5RegionSelect" onchange="onSocks5RegionChange()"
-                                style="padding-left: 16px;">
-                                <option value="">加载中...</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-group" id="socks5ProxySelectGroup">
-                        <label for="socks5ProxySelect">🌐 选择目标代理</label>
-                        <div class="input-wrapper">
-                            <select id="socks5ProxySelect"
-                                onchange="updateSocks5ConfirmButton(); updateProxyMap('socks5');"
-                                style="padding-left: 16px; font-family: 'Fira Code', monospace; font-size: 12px;">
-                                <option value=""></option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="btn-group"
-                    style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: auto; padding-top: 20px;">
-                    <button type="button" class="btn btn-primary" id="socks5ConfirmBtn" onclick="confirmSelectSocks5()">
-                        确定
-                    </button>
-                    <button type="button" class="btn btn-secondary" onclick="closeExploreSocks5Modal(event)">
-                        取消
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 探索HTTP弹窗 -->
-    <div class="modal-overlay" id="exploreHTTPModal">
-        <div class="modal">
-            <div class="modal-map-side">
-                <div id="proxy-map-http" class="proxy-map-container"></div>
-            </div>
-            <div class="modal-content-side">
-                <button type="button" class="modal-close" onclick="closeExploreHTTPModal(event)"
-                    style="cursor: pointer;">×</button>
-                <h2 class="section-title" style="margin-bottom: 10px; text-align: center;">🌐 获取更多 HTTP</h2>
-                <p style="text-align: center; color: #666; font-size: 13px; margin-bottom: 20px;">
-                    代理资源来自 Github、<a href="https://t.me/Enkelte_notif" target="_blank" rel="noopener noreferrer">Notif
-                        💬</a>频道、OTC大佬 等开源社区。
-                </p>
-                <div class="http-list-container">
-                    <div class="form-group">
-                        <label for="httpRegionSelect">🏳️‍🌈 选择目标地区</label>
-                        <div class="input-wrapper">
-                            <select id="httpRegionSelect" onchange="onHTTPRegionChange()" style="padding-left: 16px;">
-                                <option value="">加载中...</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-group" id="httpProxySelectGroup">
-                        <label for="httpProxySelect">🌐 选择目标代理</label>
-                        <div class="input-wrapper">
-                            <select id="httpProxySelect" onchange="updateHTTPConfirmButton(); updateProxyMap('http');"
-                                style="padding-left: 16px; font-family: 'Fira Code', monospace; font-size: 12px;">
-                                <option value=""></option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="btn-group"
-                    style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: auto; padding-top: 20px;">
-                    <button type="button" class="btn btn-primary" id="httpConfirmBtn" onclick="confirmSelectHTTP()"
-                        disabled>
-                        确定
-                    </button>
-                    <button type="button" class="btn btn-secondary" onclick="closeExploreHTTPModal(event)">
-                        取消
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- HOSTS 检查提示弹窗 -->
     <div class="modal-overlay" id="hostsMismatchModal" onclick="closeHostsMismatchModal(event)">
         <div class="modal" onclick="event.stopPropagation()" style="max-width: 500px;">
@@ -6093,7 +5731,6 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
     <script data-cfasync="false" src="./js/module-01-core.js"></script>
     <script data-cfasync="false" src="./js/module-02-modals.js"></script>
     <script data-cfasync="false" src="./js/module-03-notify.js"></script>
-    <script data-cfasync="false" src="./js/module-05-network-proxy.js"></script>
 </body>
 
 </html>

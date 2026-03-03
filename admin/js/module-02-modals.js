@@ -81,6 +81,9 @@
 
                 const response = await fetch(`/admin/check?${params}&_t=${Date.now()}`, {
                     method: 'GET',
+                    headers: {
+                        'X-Admin-Request': '1'
+                    },
                     signal: controller.signal
                 });
 
@@ -848,4 +851,3 @@
             markModified('convert');
             closeSubAPIModal();
         }
-

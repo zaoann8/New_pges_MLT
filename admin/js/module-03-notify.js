@@ -208,7 +208,8 @@
                 const response = await fetch('/admin/tg.json', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'X-Admin-Request': '1'
                     },
                     body: JSON.stringify({
                         BotToken: token,
@@ -386,7 +387,11 @@
                         queryParams.append('APIToken', apiToken);
                     }
 
-                    response = await fetch('/admin/getCloudflareUsage?' + queryParams.toString());
+                    response = await fetch('/admin/getCloudflareUsage?' + queryParams.toString(), {
+                        headers: {
+                            'X-Admin-Request': '1'
+                        }
+                    });
                 }
 
                 if (!response.ok) {
@@ -476,7 +481,8 @@
                 const response = await fetch('/admin/cf.json', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'X-Admin-Request': '1'
                     },
                     body: JSON.stringify(payload)
                 });
@@ -512,7 +518,10 @@
                 // 提交到服务器，但整个 currentConfig
                 const response = await fetch('/admin/config.json', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Admin-Request': '1'
+                    },
                     body: JSON.stringify(currentConfig)
                 });
 
@@ -542,7 +551,10 @@
             try {
                 const response = await fetch('/admin/tg.json', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Admin-Request': '1'
+                    },
                     body: JSON.stringify({ init: true })
                 });
 
@@ -577,7 +589,10 @@
             try {
                 const response = await fetch('/admin/cf.json', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Admin-Request': '1'
+                    },
                     body: JSON.stringify({ init: true })
                 });
 
