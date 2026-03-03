@@ -4,7 +4,61 @@
         let modifiedSections = new Set();
         let subConfigData = null;
         let hasMultipleHosts = false; // 标记是否存在多个 HOSTS
+        const FALLBACK_SUBCONFIG_DATA = [
+            {
+                label: 'ACL4SSR 预设',
+                options: [
+                    { label: 'ACL4SSR_Online', value: 'https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_Online.ini' },
+                    { label: 'ACL4SSR_Online_Full', value: 'https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_Online_Full.ini' },
+                    { label: 'ACL4SSR_Online_Full_MultiMode', value: 'https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_Online_Full_MultiMode.ini' },
+                    { label: 'ACL4SSR_Online_Mini_MultiMode', value: 'https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_Online_Mini_MultiMode.ini' },
+                    { label: 'ACL4SSR_Online_AdblockPlus', value: 'https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/config/ACL4SSR_Online_AdblockPlus.ini' }
+                ]
+            }
+        ];
         const DEFAULT_SUB_API = 'https://subconverter-latest-qfyo.onrender.com';
+
+        function buildRawGitHubCdnUrl(url) {
+            const match = String(url || '').match(/^https:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/([^/]+)\/(.+)$/);
+            if (!match) return null;
+            const [, owner, repo, ref, path] = match;
+            return `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${ref}/${path}`;
+        }
+
+        async function fetchTextStrict(url) {
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache',
+                    'Expires': '0'
+                }
+            });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return response.text();
+        }
+
+        async function fetchWithAutoMirror(url, description = '资源') {
+            const candidates = [url];
+            const cdnUrl = buildRawGitHubCdnUrl(url);
+            if (cdnUrl) candidates.push(cdnUrl);
+
+            let lastError = null;
+            for (const candidate of candidates) {
+                try {
+                    return await fetchTextStrict(candidate);
+                } catch (error) {
+                    lastError = error;
+                    console.warn(`[${description}] 拉取失败: ${candidate}`, error);
+                }
+            }
+            throw new Error(`${description}加载失败: ${lastError ? lastError.message : '未知错误'}`);
+        }
+
+        function isValidSubConfigData(data) {
+            if (!Array.isArray(data) || data.length === 0) return false;
+            return data.some(group => Array.isArray(group.options) && group.options.length > 0);
+        }
 
         function ensureConvertConfigDefaults(config) {
             if (!config.订阅转换配置) config.订阅转换配置 = {};
@@ -1625,13 +1679,14 @@
             try {
                 const url = 'https://raw.githubusercontent.com/cmliu/cmliu/main/SUBCONFIG.json';
                 const text = await fetchWithAutoMirror(url, 'SubConfig');
-                subConfigData = JSON.parse(text);
+                const parsed = JSON.parse(text);
+                subConfigData = isValidSubConfigData(parsed) ? parsed : FALLBACK_SUBCONFIG_DATA;
                 populateSubConfigSelect();
                 console.log('[订阅转换配置列表] SUBCONFIG 数据加载成功');
             } catch (error) {
                 console.error('Error loading SubConfig:', error);
-                // 加载失败时，仍然显示下拉框（只有自定义选项）
-                subConfigData = null;
+                // 加载失败时切换到内置预设，保证可选
+                subConfigData = FALLBACK_SUBCONFIG_DATA;
                 populateSubConfigSelect();
             }
         }
