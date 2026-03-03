@@ -2264,15 +2264,21 @@
             document.getElementById('logsModal').classList.remove('show');
         }
 
-        // 初始化
-        initializeTheme();
-        window.addEventListener('DOMContentLoaded', () => {
+        function bootstrapAdminPage() {
             loadConfig();
             initUserMode();
             initLineEditor('customIPs');
             // 独立预加载 SubConfig 数据，不阻塞主流程
             loadSubConfigData().catch(err => console.error('SubConfig预加载失败:', err));
-        });
+        }
+
+        // 初始化
+        initializeTheme();
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', bootstrapAdminPage);
+        } else {
+            bootstrapAdminPage();
+        }
 
         // 启动倒计时更新
         setInterval(updateCountdown, 1000);
