@@ -1677,8 +1677,14 @@
         // 加载SubConfig JSON数据
         async function loadSubConfigData() {
             try {
-                const url = 'https://raw.githubusercontent.com/cmliu/cmliu/main/SUBCONFIG.json';
-                const text = await fetchWithAutoMirror(url, 'SubConfig');
+                // 优先通过同域后端代拉，规避浏览器到 raw.githubusercontent.com 的网络差异
+                let text;
+                try {
+                    text = await fetchTextStrict('/admin/subconfig.json?_t=' + Date.now());
+                } catch (_) {
+                    const url = 'https://raw.githubusercontent.com/cmliu/cmliu/main/SUBCONFIG.json';
+                    text = await fetchWithAutoMirror(url, 'SubConfig');
+                }
                 const parsed = JSON.parse(text);
                 subConfigData = isValidSubConfigData(parsed) ? parsed : FALLBACK_SUBCONFIG_DATA;
                 populateSubConfigSelect();
